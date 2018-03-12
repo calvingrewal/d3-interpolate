@@ -1,7 +1,8 @@
+/* eslint no-console: 0 */
 import number from "../number";
 import {parseCss, parseSvg} from "./parse";
 
-function interpolateTransform(parse, pxComma, pxParen, degParen) {
+function interpolateTransform(parse, pxComma, pxParen, degParen, strictClockwise = false, angle=0) {
 
   function pop(s) {
     return s.length ? s.pop() + " " : "";
@@ -18,8 +19,17 @@ function interpolateTransform(parse, pxComma, pxParen, degParen) {
 
   function rotate(a, b, s, q) {
     if (a !== b) {
-      if (a - b > 180) b += 360; else if (b - a > 180) a += 360; // shortest path
-      q.push({i: s.push(pop(s) + "rotate(", null, degParen) - 2, x: number(a, b)});
+      // shortest path
+      if (a - b > 180) {
+        b += 360;
+      } else if (b - a > 180) {
+        a += 360;
+      }
+
+      q.push({
+        i: s.push(pop(s) + "rotate(", null, degParen) - 2,
+        x: number(a, b, strictClockwise, angle)
+      });
     } else if (b) {
       s.push(pop(s) + "rotate(" + b + degParen);
     }
@@ -60,4 +70,4 @@ function interpolateTransform(parse, pxComma, pxParen, degParen) {
 }
 
 export var interpolateTransformCss = interpolateTransform(parseCss, "px, ", "px)", "deg)");
-export var interpolateTransformSvg = interpolateTransform(parseSvg, ", ", ")", ")");
+export var interpolateTransformSvg = interpolateTransform(parseSvg, ", ", ")", ")", true, -90);
